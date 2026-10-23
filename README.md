@@ -1,4 +1,4 @@
-# mtah-possession — More than a Hack 2027, Phase 1: Ball Possession
+# Possession Intelligence - More than a Hack 2027, Phase 1: Ball Possession
 
 Frame-level possession (`H` / `A` / `D`) for FC Barcelona – Athletic Club from Metrica's automatic
 tracking, optimised for the competition's ranking metric `spellF1`.
@@ -14,7 +14,7 @@ trained on *open* Metrica matches degraded to the competition's tracking quality
 ## Reproduce the submission (one command)
 
 ```bash
-git clone <this repo> && cd mtah-possession
+git clone <https://github.com/OgayoTK1/possession-intelligence> && cd mtah-possession
 python -m venv .venv && source .venv/bin/activate      # Python 3.13 tested
 pip install -r requirements.txt
 
@@ -47,7 +47,7 @@ contains aggregate statistics only.
 ### Retraining from scratch (optional)
 
 ```bash
-git clone --depth 1 https://github.com/metrica-sports/sample-data external/sample-data
+git clone https://github.com/OgayoTK1/possession-intelligence
 python -m possession.cli train
 ```
 
