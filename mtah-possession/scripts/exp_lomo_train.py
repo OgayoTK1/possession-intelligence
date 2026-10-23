@@ -12,7 +12,7 @@ ap.add_argument("--rounds", type=int, default=models.N_ROUNDS)
 args = ap.parse_args()
 
 test = open_matches(seeds=(0, 1))
-train_pool = open_matches(seeds=(5, 6))
+train_pool = open_matches(seeds=(4, 5, 6))
 os.makedirs("cache", exist_ok=True)
 log = {}
 for g in GAMES:

@@ -14,10 +14,14 @@ official possession_metrics.evaluate. These are NOT competition scores.
 | C1. LightGBM frame model, argmax | 0.2026 | 0.016 | 0.8120 | 1621 / 346 | 2.8 | 0.200 | no temporal decoding; v2 data |
 | C2. LightGBM + probability window ±25 | 0.5581 | 0.020 | 0.8123 | 321 / 346 | 14.1 | 0.488 | fixed-window smoothing; v2 data |
 | C3. LightGBM (v3 features) + semi-Markov (k=2, α=1.0) | 0.5973 | 0.023 | 0.8174 | 269 / 346 | 16.4 | 0.506 | 2.8 s decode; v3 data |
-| C4. + touch features (v4) + semi-Markov (k=2, α=1.0) | 0.6199 | 0.022 | 0.8176 | 269 / 346 | 16.4 | 0.535 | 2.9 s decode; **selected / submitted** |
+| C4. + touch features (v4) + semi-Markov (k=2, α=1.0) | 0.6199 | 0.022 | 0.8176 | 269 / 346 | 16.4 | 0.535 | 2.9 s decode; selected before the real-data fix |
 | C4 window-smoothing comparator (±25) | 0.5808 | 0.026 | 0.8088 | 306 / 346 | 14.9 | 0.504 |  |
+| C5. + smoothed velocities, 3 noise levels (k=2, α=1.0) | 0.6421 | 0.023 | 0.8301 | 275 / 346 | 15.9 | 0.569 | 3.3 s decode; **submitted**; low-noise test runs, not paired with C4 |
+| C6. C5 + 20 SkillCorner matches | 0.5968 | 0.010 | 0.8201 | 270 / 346 | 15.5 | 0.512 | 2.8 s decode; rejected |
+| C7. C5 + SkillCorner team labels only | 0.6169 | 0.010 | 0.8270 | 263 / 346 | 16.9 | 0.530 | 2.9 s decode; rejected |
+| C8. C5 with a larger LightGBM (63 leaves, 600 rounds) | 0.6422 | 0.018 | 0.8325 | 290 / 346 | 15.3 | 0.584 | 3.2 s decode; no gain; rejected |
+| C9. C5 averaged over 3 seeds | 0.6442 | 0.022 | 0.8301 | 276 / 346 | 15.9 | 0.571 | 2.7 s decode; within noise; rejected |
 | D. TCN / sequence net | not run | | | | | | see REPORT §6 |
-| E. Ensemble | not run | | | | | | see REPORT §6 |
 
 ## Feature-group ablations (decoder k=2, α=1.0, same protocol; ablations relative to v3)
 
@@ -40,6 +44,10 @@ official possession_metrics.evaluate. These are NOT competition scores.
 | v3_full → v4_touch | +0.0226 | 6/6 | +0.0122 |
 | v3_nodir → v3_full | +0.0108 | 5/6 | -0.0006 |
 | v3_nolong → v3_full | +0.0148 | 4/6 | -0.0127 |
+| v5_smooth → v6_sc | -0.0454 | 0/6 | -0.0999 |
+| v5_smooth → v7_scteam | -0.0252 | 1/6 | -0.0578 |
+| v5_smooth → v8_big | +0.0001 | 3/6 | -0.0160 |
+| v5_smooth → v9_ens3 | +0.0021 | 4/6 | -0.0125 |
 
 ## Decoder grid (v2 data)
 

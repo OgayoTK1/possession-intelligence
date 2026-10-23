@@ -50,7 +50,7 @@ def load_competition(data_root=None):
 # -- training the final model on the open matches ----------------------------------------------
 
 def training_matches(sample_dir, seeds):
-    from .external import degrade, load_open_match, visibility_runs_from_baseline
+    from .external import degrade, load_open_match, noise_for_seed, visibility_runs_from_baseline
     runs = visibility_runs_from_baseline(os.path.join(BASELINE_DIR, "baseline_raw.csv"),
                                          graded_blocks())
     clean, degraded = [], []
@@ -58,7 +58,7 @@ def training_matches(sample_dir, seeds):
         m = load_open_match(sample_dir, g)
         clean.append(m)
         for s in seeds:
-            degraded.append(degrade(m, runs, seed=1000 * g + s))
+            degraded.append(degrade(m, runs, seed=1000 * g + s, **noise_for_seed(s)))
     return clean, degraded
 
 

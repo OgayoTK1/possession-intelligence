@@ -54,7 +54,19 @@ def cmd_audit(args):
     ts = F[:, names.index("touch_sign")]
     ok = graded & np.isfinite(ts)
     report["touch_rate_per_visible_frame"] = float(np.mean(ts[ok] != 0)) if ok.any() else None
-    report["touch_rate_open_degraded_reference"] = {"mean": 0.0918, "range": [0.0804, 0.1036]}
+    report["touch_rate_open_degraded_reference"] = {"mean": 0.083, "note": "open matches, smoothed features"}
+    # Aggregate feature levels on graded frames: lets the tracking-noise assumption be checked
+    # against the real ATD without sharing anything frame-level.
+    stats = {}
+    for name in ("all_speed_mean", "ball_speed", "n_tracked", "sx_h", "sx_a"):
+        v = F[graded, names.index(name)]
+        v = v[np.isfinite(v)]
+        stats[name] = {q: round(float(np.percentile(v, p)), 3) for q, p in
+                       (("p10", 10), ("p50", 50), ("p90", 90))} if len(v) else None
+    report["feature_levels_graded"] = stats
+    report["feature_levels_open_reference"] = {"all_speed_mean_p50_alive": 1.82,
+                                               "all_speed_mean_p50_dead": 0.85,
+                                               "ball_speed_p50": 1.96}
     paths = official_games.asset_paths(data_dir=args.data or None)
     if os.path.isfile(paths["smart_tagging"]):
         report["smart_tagging"] = st_summary(load_intervals(paths["smart_tagging"]))
@@ -93,6 +105,39 @@ def baseline_agreement(match):
     return {"agreement": float(same.mean()),
             "agreement_ball_frames": float(same[ref != "D"].mean()) if (ref != "D").any() else None,
             "agreement_if_shifted_by_one": shifted}
+
+
+def touch_stats(match):
+    """Aggregate distributions behind the touch detector (graded, ball-visible frames only)."""
+    from .features import frame_features, TOUCH_IMPULSE, TOUCH_RADIUS
+    names, F = frame_features(match)
+    graded = np.zeros(match.n_frames, dtype=bool)
+    for a, b in match.blocks:
+        graded[a:b] = True
+    col = lambda n: F[:, names.index(n)]
+    vis = graded & (col("ball_vis") == 1)
+    dmin = np.fmin(col("d1_h"), col("d1_a"))
+    imp, bs = col("touch_impulse"), col("ball_speed")
+    q = lambda v, ps: {"p%d" % p: round(float(np.nanpercentile(v, p)), 3) for p in ps}
+    return {
+        "n_visible_frames": int(vis.sum()),
+        "nearest_player_dist_m": q(dmin[vis], (10, 50, 90)),
+        "frac_player_within_touch_radius": round(float(np.nanmean(dmin[vis] < TOUCH_RADIUS)), 4),
+        "impulse_mps": q(imp[vis], (50, 90, 95, 99)),
+        "frac_impulse_over_threshold": round(float(np.nanmean(imp[vis] > TOUCH_IMPULSE)), 4),
+        "ball_speed_mps": q(bs[vis], (10, 50, 90)),
+        "touch_rate": round(float(np.nanmean(col("touch_sign")[vis] != 0)), 4),
+    }
+
+
+def cmd_diagnose(args):
+    from .pipeline import load_competition
+    match, _ = load_competition(args.data)
+    out = touch_stats(match)
+    with open(_report_path("diagnose_competition.json"), "w") as f:
+        json.dump(out, f, indent=1)
+    print(json.dumps(out, indent=1))
+    print("\n(aggregate statistics only -- safe to share)")
 
 
 def cmd_train(args):
@@ -166,7 +211,7 @@ def cmd_baseline(args):
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="possession")
     sub = ap.add_subparsers(dest="cmd", required=True)
-    for name in ("audit", "reproduce", "baseline", "train"):
+    for name in ("audit", "reproduce", "baseline", "train", "diagnose"):
         p = sub.add_parser(name)
         p.add_argument("--data", default=None, help="match bundle root (else $MTAH_DATA_DIR)")
         p.add_argument("--config", default=None)
@@ -180,7 +225,7 @@ def main(argv=None):
     if getattr(args, "team_pos", None) and not args.team:
         args.team = args.team_pos
     {"audit": cmd_audit, "reproduce": cmd_reproduce, "baseline": cmd_baseline,
-     "train": cmd_train}[args.cmd](args)
+     "train": cmd_train, "diagnose": cmd_diagnose}[args.cmd](args)
 
 
 if __name__ == "__main__":

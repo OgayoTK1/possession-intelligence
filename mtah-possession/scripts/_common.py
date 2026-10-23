@@ -2,7 +2,7 @@
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from possession.constants import BASELINE_DIR, graded_blocks, pm
-from possession.external import load_open_match, degrade, visibility_runs_from_baseline
+from possession.external import load_open_match, degrade, noise_for_seed, visibility_runs_from_baseline
 
 SAMPLE_DIR = os.environ.get("METRICA_SAMPLE_DIR", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "external", "sample-data"))
 GAMES = (1, 2, 3)
@@ -16,8 +16,9 @@ def open_matches(seeds=(0,), games=GAMES):
     for g in games:
         clean = load_open_match(SAMPLE_DIR, g)
         for s in seeds:
+            kw = noise_for_seed(s) if os.environ.get("NOISE_MIX", "1") == "1" else {}
             out[(g, s)] = degrade(clean, runs, seed=1000 * g + s,
-                                  dead_fill_prob=float(os.environ.get("DEGRADE_DEAD_FILL", "1.0")))
+                                  dead_fill_prob=float(os.environ.get("DEGRADE_DEAD_FILL", "1.0")), **kw)
     return out
 
 def score(labels, pred):

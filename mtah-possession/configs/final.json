@@ -2,6 +2,7 @@
   "team_name": "machaji",
   "model_path": "models/frame_model.txt",
   "train_seeds": [
+    4,
     5,
     6
   ],

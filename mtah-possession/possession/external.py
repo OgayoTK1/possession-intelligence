@@ -215,6 +215,16 @@ def visibility_runs_from_baseline(baseline_raw_csv, blocks):
     return out
 
 
+NOISE_LEVELS = ((0.0, 0.0, 0.0), (0.10, 0.06, 0.12), (0.25, 0.15, 0.30))  # (player, ball, ball drift) m
+
+
+def noise_for_seed(seed):
+    """Degradation seeds cycle through noise levels, so the model never depends on one assumed
+    tracking-noise level (the real ATD turned out smoother than the first assumption)."""
+    p, b, d = NOISE_LEVELS[seed % len(NOISE_LEVELS)]
+    return {"player_noise_m": p, "ball_noise_m": b, "ball_drift_m": d}
+
+
 def degrade(match, vis_runs, seed, player_noise_m=0.25, player_drop_rate=0.07,
             dead_fill_prob=1.0, ball_noise_m=0.15, ball_drift_m=0.3):
     """A copy of `match` whose ball visibility follows the competition's real gap pattern.

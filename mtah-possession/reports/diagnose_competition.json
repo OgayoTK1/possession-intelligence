@@ -1,0 +1,22 @@
+{
+ "n_visible_frames": 94214,
+ "nearest_player_dist_m": {
+  "p10": 0.44,
+  "p50": 1.914,
+  "p90": 7.022
+ },
+ "frac_player_within_touch_radius": 0.5147,
+ "impulse_mps": {
+  "p50": 1.34,
+  "p90": 4.25,
+  "p95": 5.329,
+  "p99": 8.436
+ },
+ "frac_impulse_over_threshold": 0.0835,
+ "ball_speed_mps": {
+  "p10": 1.006,
+  "p50": 5.078,
+  "p90": 14.198
+ },
+ "touch_rate": 0.0553
+}

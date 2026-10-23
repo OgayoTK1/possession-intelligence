@@ -31,6 +31,7 @@ LGB_PARAMS = {
 }
 N_ROUNDS = 300
 STRIDE = 4
+STRIDE_BY_PREFIX = {"sc": 8}   # SkillCorner: 20 matches, subsampled more so Metrica keeps weight
 
 
 def rows_for_training(match, stride=STRIDE, drop=None):
@@ -60,20 +61,27 @@ def _keep_cols(names, drop):
     return keep
 
 
-def build_training_set(matches, augment_swap=True, drop=None):
+def build_training_set(matches, augment_swap=True, drop=None, team_only_prefixes=()):
+    """team_only_prefixes: matches whose names start with these contribute only H/A rows (their
+    dead-ball labels follow a different convention and are left out)."""
     Xs, ys, names = [], [], None
     for m in matches:
+        stride = next((v for k, v in STRIDE_BY_PREFIX.items() if m.name.startswith(k)), STRIDE)
+        team_only = any(m.name.startswith(p) for p in team_only_prefixes)
         for mm in ([m, swap_teams(m)] if augment_swap else [m]):
-            n, Xm, ym = rows_for_training(mm, drop=drop)
+            n, Xm, ym = rows_for_training(mm, stride=stride, drop=drop)
+            if team_only:
+                keep = ym != 2
+                Xm, ym = Xm[keep], ym[keep]
             names = n
             Xs.append(Xm)
             ys.append(ym)
     return names, np.concatenate(Xs), np.concatenate(ys)
 
 
-def train(matches, params=None, rounds=N_ROUNDS, drop=None):
+def train(matches, params=None, rounds=N_ROUNDS, drop=None, team_only_prefixes=()):
     import lightgbm as lgb
-    names, Xtr, ytr = build_training_set(matches, drop=drop)
+    names, Xtr, ytr = build_training_set(matches, drop=drop, team_only_prefixes=team_only_prefixes)
     p = dict(LGB_PARAMS)
     if params:
         p.update(params)

@@ -19,6 +19,8 @@ import numpy as np
 SPEED_CLIP = 12.0        # m/s, above any sprint: anything faster is an identity switch
 BALL_SPEED_CLIP = 40.0   # m/s
 VEL_HALF = 2             # centred difference over +/- 2 frames
+SMOOTH_PLAYER = 6        # +/- frames of position smoothing before velocities (0.5 s window)
+SMOOTH_BALL = 2          # +/- frames for the ball (kicks are abrupt; keep it short)
 CONTROL_RADIUS = 1.5     # m
 NEAR_RADIUS = 5.0        # m
 GAP_CAP = 1500           # frames (60 s) cap for time-since / time-to ball features
@@ -27,6 +29,30 @@ DIRECTIONAL = (25, 100)            # past-only / future-only widths, frames
 
 
 # -- small numpy helpers -----------------------------------------------------------------------
+
+def _smooth_nan(x, half=4):
+    """Centred NaN-aware moving average over +/- half frames along axis 0 (1-D or 2-D).
+
+    Positions are smoothed before differentiating, so measurement noise -- whose level differs
+    between the open training matches and the competition ATD -- does not inflate speeds.
+    A frame is NaN only if no value in its window is finite.
+    """
+    x = np.asarray(x, dtype=np.float64)
+    ok = np.isfinite(x)
+    pad = [(1, 0)] + [(0, 0)] * (x.ndim - 1)
+    c = np.pad(np.cumsum(np.where(ok, x, 0.0), axis=0), pad)
+    n = np.pad(np.cumsum(ok, axis=0), pad)
+    t = x.shape[0]
+    idx = np.arange(t)
+    lo = np.maximum(0, idx - half)
+    hi = np.minimum(t, idx + half + 1)
+    cnt = n[hi] - n[lo]
+    with np.errstate(invalid="ignore", divide="ignore"):
+        out = (c[hi] - c[lo]) / cnt
+    out = np.where(cnt > 0, out, np.nan)
+    out = np.where(ok, out, np.nan)  # never invent a position where none was observed
+    return out.astype(np.float32)
+
 
 def _velocity(p, fps):
     """Centred finite difference along axis 0 over +/- VEL_HALF frames; NaN-propagating."""
@@ -170,7 +196,7 @@ def frame_features(match):
         vis = np.isfinite(bx) & np.isfinite(by)
 
         # ---- ball kinematics
-        bvx, bvy = _velocity(bx, fps), _velocity(by, fps)
+        bvx, bvy = _velocity(_smooth_nan(bx, SMOOTH_BALL), fps), _velocity(_smooth_nan(by, SMOOTH_BALL), fps)
         bspeed = np.minimum(np.hypot(bvx, bvy), BALL_SPEED_CLIP)
         bacc = np.full(n, np.nan, dtype=np.float32)
         bacc[2:-2] = np.hypot(bvx[4:] - bvx[:-4], bvy[4:] - bvy[:-4]) * (fps / 4.0)
@@ -192,7 +218,7 @@ def frame_features(match):
         put("ball_still", np.where(vis, (bspeed < 0.5).astype(np.float32), np.nan))
 
         # ---- players: velocities, team aggregates
-        pvx, pvy = _velocity(px, fps), _velocity(py, fps)
+        pvx, pvy = _velocity(_smooth_nan(px, SMOOTH_PLAYER), fps), _velocity(_smooth_nan(py, SMOOTH_PLAYER), fps)
         pspeed = np.minimum(np.hypot(pvx, pvy), SPEED_CLIP)
         okp = np.isfinite(px) & np.isfinite(py)
         put("n_tracked", okp.sum(axis=1).astype(np.float32))

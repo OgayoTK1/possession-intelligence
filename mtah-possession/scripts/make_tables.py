@@ -47,10 +47,16 @@ def main():
     lines.append(row("C2. LightGBM + probability window ±25", v2.get("meanprob_w25"), "fixed-window smoothing; v2 data"))
     v4 = load("decode_v4_touch.json") or {}
     lines.append(row("C3. LightGBM (v3 features) + semi-Markov (k=2, α=1.0)", (load("decode_v3_full.json") or {}).get("hsmm_k2_a1.0"), "v3 data"))
-    lines.append(row("C4. + touch features (v4) + semi-Markov (k=2, α=1.0)", v4.get("hsmm_k2_a1.0"), "**selected / submitted**"))
+    lines.append(row("C4. + touch features (v4) + semi-Markov (k=2, α=1.0)", v4.get("hsmm_k2_a1.0"), "selected before the real-data fix"))
     lines.append(row("C4 window-smoothing comparator (±25)", v4.get("meanprob_w25"), ""))
+    v5 = load("decode_v5_smooth.json") or {}
+    lines.append(row("C5. + smoothed velocities, 3 noise levels (k=2, α=1.0)", v5.get("hsmm_k2_a1.0"), "**submitted**; low-noise test runs, not paired with C4"))
+    lines.append(row("C6. C5 + 20 SkillCorner matches", (load("decode_v6_sc.json") or {}).get("hsmm_k2_a1.0"), "rejected"))
+    lines.append(row("C7. C5 + SkillCorner team labels only", (load("decode_v7_scteam.json") or {}).get("hsmm_k2_a1.0"), "rejected"))
+    lines.append(row("C8. C5 with a larger LightGBM (63 leaves, 600 rounds)", (load("decode_v8_big.json") or {}).get("hsmm_k2_a1.0"), "no gain; rejected"))
+    lines.append(row("C9. C5 averaged over 3 seeds", (load("decode_v9_ens3.json") or {}).get("hsmm_k2_a1.0"), "within noise; rejected"))
     lines.append("| D. TCN / sequence net | not run | | | | | | see REPORT §6 |")
-    lines.append("| E. Ensemble | not run | | | | | | see REPORT §6 |")
+
     lines += ["", "## Feature-group ablations (decoder k=2, α=1.0, same protocol; ablations relative to v3)", "",
               "| variant | spellF1 | sd | macroF1 | poss pred / gt | mean dur s | transF1@25 | notes |",
               "|---|---|---|---|---|---|---|---|"]
