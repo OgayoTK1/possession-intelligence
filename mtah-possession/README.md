@@ -1,4 +1,4 @@
-# mtah-possession — More than a Hack 2027, Phase 1: Ball Possession
+# mtah-possession - More than a Hack 2027, Phase 1: Ball Possession
 
 Frame-level possession (`H` / `A` / `D`) for FC Barcelona – Athletic Club from Metrica's automatic
 tracking, optimised for the competition's ranking metric `spellF1`.
