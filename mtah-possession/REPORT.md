@@ -1,6 +1,6 @@
 # Technical report - Ball possession from automatic tracking
 
-More than a Hack 2027, Phase 1. Team: **machaji** - Ogayo Andrew (team lead), Maxwell Okoth, James Ngugi, Alvin Njoroge, Emmanuel Masambu. Repository: this one. One command regenerates
+More than a Hack 2027, Phase 1. Team: **machaji** - Ogayo Andrew (team lead), Maxwell Okoth, James Ngugi, Alvin Njoroge, Emmanuel Masambu. Repository: this one. One command  to regenerates
 the submission: `python -m possession.cli reproduce --team machaji` (README).
 
 ## In brief
