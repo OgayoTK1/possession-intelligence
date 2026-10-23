@@ -62,9 +62,9 @@ def test_epts_loader_on_synthetic_bundle(tmp_path):
     m, rep = load_epts(stem + "_atd.xml", stem + "_atd.txt", pitch=(105.3, 68.0), n_frames=3000)
     assert rep["first_frame_id"] == 1 and rep["contiguous"] and rep["n_rows"] == 3000
     assert m.px.shape == (3000, 46)
-    assert rep["n_home_slots"] == 23
-    assert rep["player_channels"] == ["speed", "x", "y"]
-    assert rep["ball_channels"] == ["speed", "x", "y"]
+    assert rep["n_home_slots"] == 24 and rep["frame_rate"] == 25
+    assert rep["player_channels"] == ["s", "x", "y"]
+    assert rep["ball_channels"] == ["s", "x", "y"]
     assert rep["player_order_matches_layout"] is True
     # metres, NaN-preserving
     assert np.nanmax(m.px) <= 105.3 + 1e-3 and np.isnan(m.px).any()
@@ -79,7 +79,7 @@ def test_epts_layout_order_is_respected(tmp_path):
     stem = os.path.join(str(tmp_path), "tactical", "BAR-ATH_tactical")
     xml = open(stem + "_atd.xml").read()
     r1 = '<PlayerChannelRef playerChannelId="P1_x"/><PlayerChannelRef playerChannelId="P1_y"/>' \
-         '<PlayerChannelRef playerChannelId="P1_speed"/>'
+         '<PlayerChannelRef playerChannelId="P1_s"/>'
     r2 = r1.replace("P1_", "P30_")
     xml = xml.replace(r1, "@@").replace(r2, r1).replace("@@", r2)
     open(stem + "_atd.xml", "w").write(xml)

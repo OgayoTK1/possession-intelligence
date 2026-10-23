@@ -16,7 +16,7 @@ import numpy as np
 HEAD = """<?xml version="1.0" encoding="utf-8"?>
 <main>
   <Metadata>
-    <GlobalConfig><FrameRate>25</FrameRate><ProviderName>Metrica Sports</ProviderName></GlobalConfig>
+    <GlobalConfig><FrameRate>25.0</FrameRate><ProviderName>Metrica Sports</ProviderName></GlobalConfig>
     <Sessions><Session id="s1"><FieldSize><Width>105</Width><Height>68</Height></FieldSize></Session></Sessions>
     <Teams>
       <Team id="T_H"><Name>Home FC</Name></Team>
@@ -38,7 +38,7 @@ HEAD = """<?xml version="1.0" encoding="utf-8"?>
       <SplitRegister separator=",">
         <BallChannelRef channelId="x"/>
         <BallChannelRef channelId="y"/>
-        <BallChannelRef channelId="speed"/>
+        <BallChannelRef channelId="s"/>
       </SplitRegister>
     </DataFormatSpecification>
   </DataFormatSpecifications>
@@ -56,16 +56,16 @@ def write_bundle(out_dir, n_frames=199319, seed=0):
 
     players, channels, registers = [], [], []
     for k in range(N_SLOTS):
-        tid = "T_H" if k < N_SLOTS // 2 else "T_A"
+        tid = "T_H" if k < 24 else "T_A"
         pid = "P{}".format(k + 1)
         players.append('      <Player id="{}" teamId="{}"><Name>Track {}</Name>'
                        '<ShirtNumber>{}</ShirtNumber></Player>'.format(pid, tid, k + 1, k + 1))
-        for ch in ("x", "y", "speed"):
+        for ch in ("x", "y", "s"):
             channels.append('      <PlayerChannel id="{0}_{1}" playerId="{0}" channelId="{1}"/>'
                             .format(pid, ch))
         registers.append('        <SplitRegister separator=",">' + "".join(
             '<PlayerChannelRef playerChannelId="{}_{}"/>'.format(pid, ch)
-            for ch in ("x", "y", "speed")) + "</SplitRegister>")
+            for ch in ("x", "y", "s")) + "</SplitRegister>")
     with open(stem + "_atd.xml", "w") as f:
         f.write(HEAD.format(players="\n".join(players), channels="\n".join(channels),
                             registers="\n".join(registers), end=n_frames))

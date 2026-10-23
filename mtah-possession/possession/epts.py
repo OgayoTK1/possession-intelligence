@@ -84,7 +84,7 @@ def parse_metadata(meta_path):
 
     return {"teams": teams, "players": players, "player_order": player_order,
             "channel_of": channel_of, "field": field_size, "specs": specs,
-            "frame_rate": int(frame_rate) if frame_rate else None}
+            "frame_rate": int(round(float(frame_rate))) if frame_rate else None}
 
 
 def _split_register(element, channel_of):
