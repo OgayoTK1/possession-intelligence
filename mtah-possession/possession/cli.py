@@ -1,6 +1,6 @@
 """Command line entry point.
 
-    python -m possession.cli reproduce --team TEAM_NAME   # the one command: predict, validate, report
+    python -m possession.cli reproduce machaji             # the one command: predict, validate, report
     python -m possession.cli audit                        # schema / alignment audit (aggregates only)
     python -m possession.cli train                        # retrain the frame model from open data
     python -m possession.cli baseline                     # rebuild the official baseline here

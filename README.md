@@ -19,4 +19,4 @@ export MTAH_DATA_DIR=/path/to/unpacked/bundle     # folder containing tactical/
 python -m possession.cli reproduce machaji        # -> submission/machaji.csv, validated
 ```
 
-The match data is not in this repository as it remains private
+The match data is not in this repository; it is licensed for the competition only and must not be added.

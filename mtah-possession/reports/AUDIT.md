@@ -2,7 +2,7 @@
 
 Two parts: what was verified in development (no competition data available, by design), and what
 `python -m possession.cli reproduce` verifies on the real bundle, written to
-`reports/final_audit.json` on the local machine
+`reports/final_audit.json` on the local machine.
 
 ## A. Verified in development
 
@@ -19,12 +19,13 @@ Two parts: what was verified in development (no competition data available, by d
 | Submission contract | pass | 199,319 rows, header `frame,label`, frames 0..199318 in order, labels ⊂ {H,A,D,X}, no blanks, no index column; official validator exit 0 |
 | Determinism (pipeline) | pass | two full runs on a full-size synthetic bundle: identical SHA-256 |
 | Determinism (training) | pass | retraining reproduced `models/frame_model.txt` byte-for-byte |
-| Runtime | measured | synthetic full-size bundle, 2 cores: load 3.5 s, predict 15.8 s, ~0.7 GB peak |
+| Runtime | measured | real match, Windows laptop: load 16 s, predict 44–47 s; synthetic bundle, 2 cores: ~20 s, ~0.7 GB peak |
+| Determinism (current model) | pass | retraining from open data reproduced `models/frame_model.txt` byte-for-byte (SHA-256 35fb2aed…); three runs on the real match gave the same submission SHA-256 8c5434aa… |
 | No restricted data in the repository | pass | `.gitignore` blocks `data/`, all ATD/homography/tagging/video patterns, all CSVs except vendored public ones, and machine-local reports |
 
-## B. What run on the real bundle must show (`reports/final_audit.json`, `audit_competition.json`)
+## B. What a run on the real bundle must show (`reports/final_audit.json`, `audit_competition.json`)
 
-Runned in order:
+Run, in order:
 
 ```bash
 python -m pytest -q tests                                  # 20 passed
@@ -42,7 +43,7 @@ Expected values, and what to do if they differ:
 | `ball_present_all` / `ball_present_graded` | 0.569 / 0.593 (DATA.md) | stop: parsing problem |
 | `mean_tracked_graded` | ≈ 20.5 (DATA.md) | stop: parsing problem |
 | `alignment_vs_official_baseline_raw.agreement` | ≈ 1.0, and lower when shifted by one frame | < 0.99 means alignment, team mapping or units differ from the official baseline |
-| `touch_rate_per_visible_frame` | near 0.08–0.10 (open-data reference) | much higher ⇒ real ball noisier than assumed; touch features less reliable (REPORT §7) |
+| `touch_rate_per_visible_frame` | about 0.03 on this match (measured: 0.034) | much higher ⇒ ball noisier than assumed; check `python -m possession.cli diagnose` |
 | `validator_exit_code` | 0 | do not submit |
 | `diagnostics.label_counts_graded.X` | 0 | — |
 | `diagnostics.label_counts_ungraded` | all X (40,462) | — |

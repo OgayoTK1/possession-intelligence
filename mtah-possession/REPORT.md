@@ -1,6 +1,6 @@
 # Technical report - Ball possession from automatic tracking
 
-More than a Hack 2027, Phase 1. Team: **machaji** - Ogayo Andrew (team lead), Maxwell Okoth, James Ngugi, Alvin Njoroge, Emmanuel Masambu. Repository: this one. One command  to regenerates
+More than a Hack 2027, Phase 1. Team: **machaji** - Ogayo Andrew (team lead), Maxwell Okoth, James Ngugi, Alvin Njoroge, Emmanuel Masambu. Repository: this one. One command regenerates
 the submission: `python -m possession.cli reproduce --team machaji` (README).
 
 ## In brief
@@ -131,14 +131,14 @@ not used in training (6 runs, ~346 possessions each). Scores use the official
 **Does the validation set resemble the competition?** The official baseline algorithm on degraded
 open matches: spellF1 0.023 / 0.181 / 0.215 / 0.205 for windows 0/25/50/125 vs published
 full-match 0.049 / 0.200 / 0.243 / 0.224 — the same ordering and similar level on the ranking
-metric. macroF1 is much lower on my data (0.39–0.44 vs 0.65–0.67) even when ball visibility is
-made fully stoppage-correlated (at most 0.55), so my degraded data is harder at frame level than the real
-match. I report this rather than tune the degradation to it.
+metric. macroF1 is much lower on our data (0.39–0.44 vs 0.65–0.67) even when ball visibility is
+made fully stoppage-correlated (at most 0.55), so our degraded data is harder at frame level than the real
+match. We report this rather than tune the degradation to it.
 
 | system (held-out open matches) | spellF1 | macroF1 | poss / true |
 |---|---|---|---|
 | Official baseline ±50 (published floor algorithm) | 0.215 | 0.429 | 483 / 346 |
-| Baseline evidence + my semi-Markov decoder | 0.220 | 0.409 | 357 / 346 |
+| Baseline evidence + our semi-Markov decoder | 0.220 | 0.409 | 357 / 346 |
 | LightGBM, argmax | 0.238 | 0.810 | 1403 / 346 |
 | LightGBM + probability window ±25 | 0.581 | 0.809 | 306 / 346 |
 | **LightGBM + semi-Markov, k=2, α=1.0 (selected)** | **0.620** | 0.818 | 269 / 346 |
@@ -150,7 +150,7 @@ What the comparisons show:
 * **Decoding matters second.** On the same LightGBM probabilities, duration-aware decoding beats
   fixed-window smoothing by +0.039 and argmax by +0.38.
 * **The decoder setting is not fragile.** Over k ∈ {1,2,3} and α ∈ [0.35, 4], held-out spellF1
-  stays within 0.56–0.61 (v2 grid); I took the centre of the plateau rather than its best cell.
+  stays within 0.56–0.61 (v2 grid); we took the centre of the plateau rather than its best cell.
 
 Feature ablations (same protocol, decoder fixed):
 
@@ -177,7 +177,7 @@ The first version (the v4 configuration above) produced a valid file, but its ag
 statistics were implausible: 46% of graded frames dead ball (public truth 20%), 4.6
 possessions/min, mean possession 7.0 s, and public-window spellF1 0.249 — below the baselines.
 
-Diagnosis, from aggregate statistics only: on an open match, my degradation noise (0.25 m per
+Diagnosis, from aggregate statistics only: on an open match, our degradation noise (0.25 m per
 frame on players) raised the median whole-field player speed during play from 1.84 to 3.39 m/s
 and during stoppages from 0.87 to 2.95 m/s. The model had learned that live play looks fast; the
 real ATD is smoother, so live play looked like a stoppage.
@@ -243,7 +243,7 @@ the audit. The broadcast feed is not used (unsynchronised).
 ## 7. Limitations and risks
 
 * **Label-convention shift.** The competition truth is "owning team" from corrected tracking;
-  my training labels come from events. They agree in aggregate (§3) but may differ on touches and
+  our training labels come from events. They agree in aggregate (§3) but may differ on touches and
   restart timing. This is the largest unquantified risk.
 * **Degradation realism.** Visibility runs are the real ones; noise levels were our assumption
   and the first one was wrong (§5.1). Training now spans three levels and the speed features are
@@ -266,5 +266,9 @@ the CSV writer is byte-stable, and the decoder is exact dynamic programming. Lig
 can differ in the last floating-point bits across CPU architectures, which could in rare cases
 change a frame; the SHA lets anyone compare. Retraining from open data: `python -m possession.cli train` (about 90 s on 2 cores; retraining reproduced the committed model file byte-for-byte).
 Tests: `python -m pytest -q tests` (no match data required).
+
+Assets used: tactical ATD (player and ball positions). Read but not used by the model: Smart Tagging
+(audit only), homography and both videos (not opened), broadcast ATD (not synchronised to the
+tactical video). Reasons in §6.
 
 
