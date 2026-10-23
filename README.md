@@ -1,6 +1,6 @@
 # possession-intelligence
 
-**More than a Hack 2027 — Phase 1: Ball Possession.** Team **machaji**: Ogayo Andrew (team lead),
+**More than a Hack 2027 - Phase 1: Ball Possession.** Team **machaji**: Ogayo Andrew (team lead),
 Maxwell Okoth, James Ngugi, Alvin Njoroge, Emmanuel Masambu.
 
 All code lives in [`mtah-possession/`](mtah-possession/):
@@ -19,4 +19,4 @@ export MTAH_DATA_DIR=/path/to/unpacked/bundle     # folder containing tactical/
 python -m possession.cli reproduce machaji        # -> submission/machaji.csv, validated
 ```
 
-The match data is not in this repository and must not be added to it.
+The match data is not in this repository as it remains private
