@@ -1,6 +1,6 @@
 # Technical report — Ball possession from automatic tracking
 
-More than a Hack 2027, Phase 1. Team: **machaji** — Ogayo Andrew (team lead), Maxwell Okoth, James Ngugi, Alvin Njoroge, Emmanuel Masambu. Repository: this one. One command regenerates
+More than a Hack 2027, Phase 1. Team: **machaji** - Ogayo Andrew (team lead), Maxwell Okoth, James Ngugi, Alvin Njoroge, Emmanuel Masambu. Repository: this one. One command regenerates
 the submission: `python -m possession.cli reproduce --team machaji` (README).
 
 ## In brief
@@ -33,11 +33,11 @@ tactical tracking (EPTS)  ->  per-frame features   ->  LightGBM: P(H), P(A), P(D
 
 ## 1. Summary
 
-I treat possession as noisy, partially observed state inference over three states (`H`, `A`,
+We treat possession as noisy, partially observed state inference over three states (`H`, `A`,
 `D`). A LightGBM classifier estimates per-frame state probabilities from position-only,
 team-symmetric features; a semi-Markov Viterbi decoder turns them into possessions with
 data-fitted duration and transition priors. The classifier is trained only on **Metrica's three
-open sample matches**, whose clean tracking I degrade to reproduce the competition ATD's measured
+open sample matches**, whose clean tracking we degrade to reproduce the competition ATD's measured
 ball-visibility pattern and player coverage. Labels for those matches are derived algorithmically
 from their open event data using the challenge's possession rules.
 
@@ -48,7 +48,7 @@ not from the 17 public ones. Under identical degradation, the official baseline 
 levels. **This is not a prediction of the competition score**: the labelling conventions, teams
 and tracking noise differ (§7).
 
-On the real match, the first version over-predicted dead ball (46% of graded frames) because my
+On the real match, the first version over-predicted dead ball (46% of graded frames) because our
 assumed tracking noise inflated speeds in training; §5.1 documents the diagnosis and the fix. The
 submitted version predicts 3.29 possessions/min (public window truth: 3.4), and on the public
 5-minute window — used only as a correctness check — scores spellF1 0.537 and macroF1 0.741 (the
@@ -67,7 +67,7 @@ official baselines: 0.33–0.42 and 0.58–0.62).
    directions. The degradation therefore makes visibility independent of state (fills stoppage
    gaps with a noisy carried ball), so the model cannot learn that shortcut.
 3. **The EPTS layout is the authority, not `<Players>` order.** In Metrica's open EPTS file the raw
-   column order differs from the `<Players>` order; the official baseline assumes they match. My
+   column order differs from the `<Players>` order; the official baseline assumes they match. Our
    reader follows `DataFormatSpecification` (per frame range) and the audit reports whether the
    competition file agrees. `audit` also re-derives the baseline's nearest-team codes and compares
    them frame by frame with the organisers' `baseline_raw.csv` — a direct check of frame alignment,
@@ -98,7 +98,7 @@ so that speed features do not depend on the tracking-noise level (§5.1):
 ball kinematics and pitch geometry; per-team nearest/second-nearest distance to the ball, counts
 within 1.5 m / 5 m, relative velocity of each team's nearest player; team centroids, spreads,
 mean speed and forward velocity, defensive/attacking line heights; whole-field speed and
-fraction of near-stationary players (stoppages); ball-gap length features; **touch features** —
+fraction of near-stationary players (stoppages); ball-gap length features; **touch features** -
 abrupt change of the smoothed ball velocity with a player within 2 m, and the team of the last and
 next touch (carried through ball gaps); centred windows ±12/50/150/400 frames and past/future-only
 windows of 25/100 frames. Each half is rotated so home attacks +x; slots are only ever aggregated by
@@ -235,8 +235,7 @@ gaps, short possessions), not by model capacity or training-set size from other 
 
 **Not done, deliberately.** A temporal CNN/sequence model (D) was not trained: with three
 training matches the frame model's errors are dominated by missing evidence, not by an inability
-to model context the windows already provide, and I could not validate a higher-capacity model
-honestly on this little data. No ensemble (E): there is no second strong, decorrelated
+to model context the windows already provide. No ensemble (E): there is no second strong, decorrelated
 candidate. **Smart Tagging and homography are not used**: they exist only for the competition
 match, so their effect could be measured on nothing but 17 public possessions. They are read by
 the audit. The broadcast feed is not used (unsynchronised).
@@ -246,7 +245,7 @@ the audit. The broadcast feed is not used (unsynchronised).
 * **Label-convention shift.** The competition truth is "owning team" from corrected tracking;
   my training labels come from events. They agree in aggregate (§3) but may differ on touches and
   restart timing. This is the largest unquantified risk.
-* **Degradation realism.** Visibility runs are the real ones; noise levels were my assumption
+* **Degradation realism.** Visibility runs are the real ones; noise levels were our assumption
   and the first one was wrong (§5.1). Training now spans three levels and the speed features are
   smoothed; the audit prints the real match's speed and touch statistics for comparison.
 * **Dead-ball share.** The submitted file predicts 30.6% dead ball on the real match. The truth
@@ -254,7 +253,7 @@ the audit. The broadcast feed is not used (unsynchronised).
   2,934 pre-kick-off dead frames), so this may be slightly high.
 * **Three training matches, one vendor, anonymised teams.** Barcelona's style (long possessions,
   high line) is not represented specifically.
-* **Public window.** I did not select anything on it. Its score is reported by `reproduce` with a
+* **Public window.** We did not select anything on it. Its score is reported by `reproduce` with a
   1000-draw bootstrap interval for correctness checking only.
 
 ## 8. Reproduction and runtime
@@ -268,5 +267,4 @@ can differ in the last floating-point bits across CPU architectures, which could
 change a frame; the SHA lets anyone compare. Retraining from open data: `python -m possession.cli train` (about 90 s on 2 cores; retraining reproduced the committed model file byte-for-byte).
 Tests: `python -m pytest -q tests` (no match data required).
 
-Assets used: tactical ATD (positions). Read but not used by the model: Smart Tagging (audit),
-homography and both videos (not opened), broadcast ATD.
+
