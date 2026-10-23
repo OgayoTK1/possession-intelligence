@@ -14,7 +14,7 @@ trained on *open* Metrica matches degraded to the competition's tracking quality
 ## Reproduce the submission (one command)
 
 ```bash
-git clone <this repo> && cd mtah-possession
+git clone <https://github.com/OgayoTK1/possession-intelligence> && cd mtah-possession
 python -m venv .venv && source .venv/bin/activate      # Python 3.13 tested
 pip install -r requirements.txt
 
