@@ -1,0 +1,40 @@
+{
+ "recall_by_duration@IoU0.5": {
+  "(0, 2)": {
+   "matched": 46,
+   "n": 400,
+   "recall": 0.115
+  },
+  "(2, 5)": {
+   "matched": 219,
+   "n": 506,
+   "recall": 0.433
+  },
+  "(5, 15)": {
+   "matched": 387,
+   "n": 570,
+   "recall": 0.679
+  },
+  "(15, 1000000000.0)": {
+   "matched": 460,
+   "n": 602,
+   "recall": 0.764
+  }
+ },
+ "false_splits_per_100_gt": 1.6,
+ "merges_per_100_pred": 12.4,
+ "turnovers_gt": 1694,
+ "turnover_miss_rate_25f": 0.591,
+ "dead_segments_gt": 386,
+ "dead_segments_missed": 62,
+ "dead_start_abs_err_median_frames": 10.0,
+ "dead_end_abs_err_median_frames": 8.0,
+ "duration_s_gt": {
+  "median": 6.52,
+  "mean": 13.034533205004811
+ },
+ "duration_s_pred": {
+  "median": 10.16,
+  "mean": 16.37267990074442
+ }
+}

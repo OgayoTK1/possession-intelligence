@@ -1,0 +1,16 @@
+{
+  "team_name": "TEAM_NAME",
+  "model_path": "models/frame_model.txt",
+  "train_seeds": [
+    5,
+    6
+  ],
+  "rounds": 300,
+  "drop": [],
+  "decoder": {
+    "type": "hsmm_erlang",
+    "k": 2,
+    "alpha": 1.0
+  },
+  "notes": "Feature set v4 (all features incl. touch_). Decoder k=2, alpha=1.0: centre of the flat plateau of held-out spellF1 on degraded open Metrica matches (reports/decode_grid_v2.json, decode_v4_touch.json). Nothing was selected on the public window."
+}

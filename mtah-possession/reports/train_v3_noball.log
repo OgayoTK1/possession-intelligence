@@ -1,0 +1,3 @@
+game 1: trained in 34s on 4 matches; top features: ['all_speed_mean_fut100', 'sy_h', 'sy_a', 'cy_h', 'cy_a', 'all_speed_mean_m50', 'sx_a_m400', 'sx_h_m400', 'cx_h_m400', 'cx_a_m400']
+game 2: trained in 35s on 4 matches; top features: ['all_speed_mean_fut100', 'sy_h', 'sy_a', 'sx_h_m400', 'sx_a_m400', 'all_speed_mean_m150', 'all_speed_mean_m50', 'cy_a', 'cy_h', 'xlo_h']
+game 3: trained in 32s on 4 matches; top features: ['all_speed_mean_fut100', 'sx_h_m400', 'sx_a_m400', 'sy_h', 'all_speed_mean_m50', 'sy_a', 'cy_a', 'cy_h', 'vx_h_m400', 'cx_a_m400']

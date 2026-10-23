@@ -1,0 +1,3 @@
+game 1: trained in 52s on 4 matches; top features: ['control_sign_m50', 'all_speed_mean_fut100', 'control_sign_m150', 'ball_vis_m12', 'control_sign_past100', 'sy_a', 'sy_h', 'cx_a_m400', 'all_speed_mean_m50', 'cy_a']
+game 2: trained in 50s on 4 matches; top features: ['all_speed_mean_fut100', 'control_sign_m150', 'control_sign_m50', 'sx_a_m400', 'all_speed_mean_m50', 'ball_vis_m12', 'sx_h_m400', 'control_sign_past100', 'sy_h', 'sy_a']
+game 3: trained in 48s on 4 matches; top features: ['control_sign_m50', 'all_speed_mean_fut100', 'control_sign_m150', 'sx_a_m400', 'sx_h_m400', 'all_speed_mean_m50', 'd1_diff_m400', 'ball_x_m150', 'ball_vis_m12', 'control_sign_past100']

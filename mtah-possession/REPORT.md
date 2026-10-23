@@ -1,0 +1,181 @@
+# Technical report — Ball possession from automatic tracking
+
+More than a Hack 2027, Phase 1. Team: **TEAM_NAME**. Repository: this one. One command regenerates
+the submission: `python -m possession.cli reproduce --team TEAM_NAME` (README).
+
+## 1. Summary
+
+I treat possession as noisy, partially observed state inference over three states (`H`, `A`,
+`D`). A LightGBM classifier estimates per-frame state probabilities from position-only,
+team-symmetric features; a semi-Markov Viterbi decoder turns them into possessions with
+data-fitted duration and transition priors. The classifier is trained only on **Metrica's three
+open sample matches**, whose clean tracking I degrade to reproduce the competition ATD's measured
+ball-visibility pattern and player coverage. Labels for those matches are derived algorithmically
+from their open event data using the challenge's possession rules.
+
+Selection evidence comes from leave-one-match-out validation on those ~1,040 open possessions,
+not from the 17 public ones. Under identical degradation, the official baseline scores spellF1
+0.215 there (its published full-match score is 0.243) and the selected system scores **0.620**
+(sd 0.022 across held-out matches). **This is not a prediction of the competition score**: the
+labelling conventions, teams and tracking noise differ (§7).
+
+## 2. What the data audit changed
+
+1. **Ball gaps are long, and the public window hides it.** From the committed `baseline_raw.csv`
+   (public; `D` exactly where the ATD has no ball) the graded halves contain 150 missing-ball runs
+   with a median of ~10 s and a maximum of 3.7 min; runs over 20 s hold 61–73% of all missing
+   frames. In the public window only 6.5% of in-play frames lack the ball. A method tuned there
+   would over-trust the ball. So the model has a **ball-free path** (team shape, speeds, line
+   heights) and the validation data replays the real gap sequence.
+2. **Missing is not dead.** Two of the four public dead-ball segments have the ball visible
+   throughout (20.4 s and 14.5 s), so "no ball ⇒ D" (the baseline's rule) is wrong in both
+   directions. The degradation therefore makes visibility independent of state (fills stoppage
+   gaps with a noisy carried ball), so the model cannot learn that shortcut.
+3. **The EPTS layout is the authority, not `<Players>` order.** In Metrica's open EPTS file the raw
+   column order differs from the `<Players>` order; the official baseline assumes they match. My
+   reader follows `DataFormatSpecification` (per frame range) and the audit reports whether the
+   competition file agrees. `audit` also re-derives the baseline's nearest-team codes and compares
+   them frame by frame with the organisers' `baseline_raw.csv` — a direct check of frame alignment,
+   slot→team mapping and units on the real file.
+4. **Graded but pre-kick-off.** The 2nd half is graded from 2,934 frames before its kick-off, all
+   `D`. Training blocks include each open match's pre-kick-off stretch, labelled `D`.
+
+## 3. Possession rules implemented (open-match labels)
+
+Exactly as `possession/external.py` documents and `tests/test_core.py` checks:
+
+* A team gains possession at the start of its own controlled action: pass, carry, recovery, set
+  piece, shot. A challenge (duel) never changes possession on its own; nor does `BALL LOST`.
+* Loose phases keep the previous team until the opponent's controlled action.
+* The ball is dead from a ball-out (end frame), a foul received, or a goal, until the next set
+  piece, which restarts play for the set-piece team. A stoppage followed by in-play actions
+  without a restart (advantage) is discarded.
+
+Aggregate agreement with the public ground truth's conventions: 3.3–4.0 possessions/min (public:
+3.4), mean 12–15 s (14.2 s), dead-ball share 17–25% (20%).
+
+## 4. Method
+
+**Features** (`features.py`, 149 columns; positions only, speeds recomputed so open and
+competition data are treated identically; missing stays `NaN`):
+ball kinematics and pitch geometry; per-team nearest/second-nearest distance to the ball, counts
+within 1.5 m / 5 m, relative velocity of each team's nearest player; team centroids, spreads,
+mean speed and forward velocity, defensive/attacking line heights; whole-field speed and
+fraction of near-stationary players (stoppages); ball-gap length features; **touch features** —
+abrupt change of the smoothed ball velocity with a player within 2 m, and the team of the last and
+next touch (carried through ball gaps); centred windows ±12/50/150/400 frames and past/future-only
+windows of 25/100 frames. Each half is rotated so home attacks +x; slots are only ever aggregated by
+team.
+
+**Frame model** (`models.py`): LightGBM multiclass, 300 rounds, deterministic. Training rows
+are every 4th graded frame of three open matches × two degradation seeds × both team orientations
+(features rebuilt on a team-swapped match). Inference averages the prediction with its
+team-swapped counterpart, so the output is exactly team-equivariant: nothing is learned about
+"home".
+
+**Decoder** (`decode.py`): Erlang-expanded hidden semi-Markov model. Each state is a chain of
+k = 2 sub-states, giving negative-binomial durations whose means and the H/A/D transition matrix
+are fitted from training labels (H/A statistics pooled for symmetry). Emissions are
+α·(log p(state|x) − log prior). Exact Viterbi per half; nothing crosses halftime. There is no
+hand-set minimum duration and no frame-level correction.
+
+**Abstention.** `X` is written only on ungraded frames. On graded frames the scorer forward-fills
+`X` (tested in `tests/test_core.py`), so an abstention at a turnover carries the old team across
+it; the decoder already outputs its best full path, so abstaining can only lose.
+
+## 5. Validation protocol and results
+
+Leave-one-match-out over the three open matches; each held-out match is degraded with two seeds
+not used in training (6 runs, ~346 possessions each). Scores use the official
+`possession_metrics.evaluate`. Full tables, all generated from JSON outputs:
+[`reports/EXPERIMENTS.md`](reports/EXPERIMENTS.md).
+
+**Does the validation set resemble the competition?** The official baseline algorithm on degraded
+open matches: spellF1 0.023 / 0.181 / 0.215 / 0.205 for windows 0/25/50/125 vs published
+full-match 0.049 / 0.200 / 0.243 / 0.224 — the same ordering and similar level on the ranking
+metric. macroF1 is much lower on my data (0.39–0.44 vs 0.65–0.67) even when ball visibility is
+made fully stoppage-correlated (at most 0.55), so my degraded data is harder at frame level than the real
+match. I report this rather than tune the degradation to it.
+
+| system (held-out open matches) | spellF1 | macroF1 | poss / true |
+|---|---|---|---|
+| Official baseline ±50 (published floor algorithm) | 0.215 | 0.429 | 483 / 346 |
+| Baseline evidence + my semi-Markov decoder | 0.220 | 0.409 | 357 / 346 |
+| LightGBM, argmax | 0.238 | 0.810 | 1403 / 346 |
+| LightGBM + probability window ±25 | 0.581 | 0.809 | 306 / 346 |
+| **LightGBM + semi-Markov, k=2, α=1.0 (selected)** | **0.620** | 0.818 | 269 / 346 |
+
+What the comparisons show:
+
+* **Evidence matters first.** The semi-Markov decoder on the baseline's own evidence is no better
+  than majority voting (0.220 vs 0.215). The gain comes from the learned evidence.
+* **Decoding matters second.** On the same LightGBM probabilities, duration-aware decoding beats
+  fixed-window smoothing by +0.039 and argmax by +0.38.
+* **The decoder setting is not fragile.** Over k ∈ {1,2,3} and α ∈ [0.35, 4], held-out spellF1
+  stays within 0.56–0.61 (v2 grid); I took the centre of the plateau rather than its best cell.
+
+Feature ablations (same protocol, decoder fixed):
+
+| variant | spellF1 | paired vs reference |
+|---|---|---|
+| v4: all features incl. touch (**selected**) | **0.620** | +0.023 vs v3, 6/6 runs better |
+| v3: all except touch | 0.597 | reference for the rows below |
+| players only (no ball-derived features) | 0.471 | −0.126, 0/6 runs survive |
+| ball-centric (no team-shape/speed features) | 0.512 | −0.086, 0/6 runs survive |
+| no long context (±150/±400, 100-frame windows) | 0.582 | −0.015, worse in 4/6 runs |
+| no past/future directional windows | 0.587 | −0.011, worse in 5/6 runs |
+| sensitivity: stoppage-correlated ball missingness | 0.617 | conclusions unchanged |
+
+Both evidence sources are necessary and complementary: a players-only model still reaches 0.47
+(more than twice the baseline), which is what carries the 41% of graded frames without a ball.
+Long and directional context are weakly supported; they are kept because they are only extra
+columns in the same model, and the evidence is reported as weak.
+
+**Paired test of the touch features**: 6/6 held-out runs improve, mean +0.023, minimum +0.012.
+
+## 6. Error analysis and what was not done
+
+On the selected configuration (`reports/diagnostics_v4_touch.json`; v3 in brackets, which is
+the diagnosis that motivated the touch features):
+
+* Recall at IoU 0.5 by true possession length: 15.8% [11.5%] for < 2 s, 46% [43%] for 2–5 s,
+  69% [68%] for 5–15 s, 76% [76%] for > 15 s. Short possessions remain the dominant loss.
+* Merges outnumber splits: 12.2 merges per 100 predicted spells vs 1.8 splits per 100 true ones;
+  predicted median duration 10.3 s vs 6.5 s true. 56% [59%] of turnovers are not localised
+  within ±1 s.
+* Dead-ball segments: 62 of 386 missed; matched ones start/end within a median 9 / 5 frames.
+
+Raising α produces more, shorter possessions but loses more precision than it gains recall
+(spellF1 falls beyond α ≈ 1). The limit is turnover evidence during long ball gaps, not decoding.
+
+**Not done, deliberately.** A temporal CNN/sequence model (D) was not trained: with three
+training matches the frame model's errors are dominated by missing evidence, not by an inability
+to model context the windows already provide, and I could not validate a higher-capacity model
+honestly on this little data. No ensemble (E): there is no second strong, decorrelated
+candidate. **Smart Tagging and homography are not used**: they exist only for the competition
+match, so their effect could be measured on nothing but 17 public possessions. They are read by
+the audit. The broadcast feed is not used (unsynchronised).
+
+## 7. Limitations and risks
+
+* **Label-convention shift.** The competition truth is "owning team" from corrected tracking;
+  my training labels come from events. They agree in aggregate (§3) but may differ on touches and
+  restart timing. This is the largest unquantified risk.
+* **Degradation realism.** Visibility runs are the real ones; ball and player noise levels are my
+  assumptions. The touch threshold (4.5 m/s) is set from the noise model, so a noisier real ball
+  would produce more spurious touches. The audit prints the competition touch rate for comparison.
+* **Three training matches, one vendor, anonymised teams.** Barcelona's style (long possessions,
+  high line) is not represented specifically.
+* **Public window.** I did not select anything on it. Its score is reported by `reproduce` with a
+  1000-draw bootstrap interval for correctness checking only.
+
+## 8. Reproduction and runtime
+
+`python -m possession.cli reproduce --team TEAM_NAME` — loads the ATD, predicts, writes
+`submission/TEAM_NAME.csv`, runs the official validator on that exact file, writes
+`reports/final_audit.json`. On a full-size synthetic bundle in my environment (2 CPU cores):
+load 3.5 s, features + model + decoding 15.8 s, about 20 s wall time and 0.7 GB peak memory; the CSV's SHA-256 was identical across two runs. Retraining from open data: `python -m possession.cli train` (about 90 s on 2 cores; retraining reproduced the committed model file byte-for-byte).
+Tests: `python -m pytest -q tests` (no match data required).
+
+Assets used: tactical ATD (positions). Read but not used by the model: Smart Tagging (audit),
+homography and both videos (not opened), broadcast ATD.
