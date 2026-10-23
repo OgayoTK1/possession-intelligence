@@ -267,8 +267,6 @@ can differ in the last floating-point bits across CPU architectures, which could
 change a frame; the SHA lets anyone compare. Retraining from open data: `python -m possession.cli train` (about 90 s on 2 cores; retraining reproduced the committed model file byte-for-byte).
 Tests: `python -m pytest -q tests` (no match data required).
 
-Assets used: tactical ATD (player and ball positions). Read but not used by the model: Smart Tagging
-(audit only), homography and both videos (not opened), broadcast ATD (not synchronised to the
-tactical video). Reasons in §6.
+
 
 
