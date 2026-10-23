@@ -2,7 +2,7 @@
 
 Two parts: what was verified in development (no competition data available, by design), and what
 `python -m possession.cli reproduce` verifies on the real bundle, written to
-`reports/final_audit.json` on your machine.
+`reports/final_audit.json` on the local machine
 
 ## A. Verified in development
 
@@ -22,9 +22,9 @@ Two parts: what was verified in development (no competition data available, by d
 | Runtime | measured | synthetic full-size bundle, 2 cores: load 3.5 s, predict 15.8 s, ~0.7 GB peak |
 | No restricted data in the repository | pass | `.gitignore` blocks `data/`, all ATD/homography/tagging/video patterns, all CSVs except vendored public ones, and machine-local reports |
 
-## B. What your run on the real bundle must show (`reports/final_audit.json`, `audit_competition.json`)
+## B. What run on the real bundle must show (`reports/final_audit.json`, `audit_competition.json`)
 
-Run, in order:
+Runned in order:
 
 ```bash
 python -m pytest -q tests                                  # 20 passed
