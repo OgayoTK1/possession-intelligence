@@ -1,5 +1,5 @@
 {
-  "team_name": "TEAM_NAME",
+  "team_name": "machaji",
   "model_path": "models/frame_model.txt",
   "train_seeds": [
     5,

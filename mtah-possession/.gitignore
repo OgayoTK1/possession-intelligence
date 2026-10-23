@@ -1,0 +1,21 @@
+# Match data is licensed for the competition only and must never be committed.
+data/
+*.mp4
+*_atd.txt
+*_atd.xml
+*_homography.csv
+*_smart_tagging.xml
+# Submissions are full label sets for the match: keep them out of the public repo.
+submission/
+*.csv
+!third_party/mtah_official/gt/*.csv
+!third_party/mtah_official/baselines/*.csv
+# Machine-local reports produced from the match data (share aggregates deliberately, not by commit)
+reports/audit_competition.json
+reports/final_audit.json
+# caches / external downloads
+cache/
+scripts/cache/
+external/
+__pycache__/
+.pytest_cache/

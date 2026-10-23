@@ -1,7 +1,7 @@
 # Technical report — Ball possession from automatic tracking
 
-More than a Hack 2027, Phase 1. Team: **TEAM_NAME**. Repository: this one. One command regenerates
-the submission: `python -m possession.cli reproduce --team TEAM_NAME` (README).
+More than a Hack 2027, Phase 1. Team: **machaji** — Ogayo Andrew (team lead), Maxwell Okoth, James Ngugi, Alvin Njoroge, Emmanuel Masambu. Repository: this one. One command regenerates
+the submission: `python -m possession.cli reproduce --team machaji` (README).
 
 ## 1. Summary
 
@@ -171,8 +171,8 @@ the audit. The broadcast feed is not used (unsynchronised).
 
 ## 8. Reproduction and runtime
 
-`python -m possession.cli reproduce --team TEAM_NAME` — loads the ATD, predicts, writes
-`submission/TEAM_NAME.csv`, runs the official validator on that exact file, writes
+`python -m possession.cli reproduce --team machaji` — loads the ATD, predicts, writes
+`submission/machaji.csv`, runs the official validator on that exact file, writes
 `reports/final_audit.json`. On a full-size synthetic bundle in my environment (2 CPU cores):
 load 3.5 s, features + model + decoding 15.8 s, about 20 s wall time and 0.7 GB peak memory; the CSV's SHA-256 was identical across two runs. Retraining from open data: `python -m possession.cli train` (about 90 s on 2 cores; retraining reproduced the committed model file byte-for-byte).
 Tests: `python -m pytest -q tests` (no match data required).

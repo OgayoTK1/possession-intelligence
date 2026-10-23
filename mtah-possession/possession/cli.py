@@ -172,9 +172,13 @@ def main(argv=None):
         p.add_argument("--config", default=None)
         p.add_argument("--out-dir", default=None)
         p.add_argument("--team", default=None)
+        p.add_argument("team_pos", nargs="?", default=None, metavar="TEAM",
+                       help="team name (same as --team)")
         p.add_argument("--out", default=None)
         p.add_argument("--sample-dir", default=os.path.join(ROOT, "external", "sample-data"))
     args = ap.parse_args(argv)
+    if getattr(args, "team_pos", None) and not args.team:
+        args.team = args.team_pos
     {"audit": cmd_audit, "reproduce": cmd_reproduce, "baseline": cmd_baseline,
      "train": cmd_train}[args.cmd](args)
 

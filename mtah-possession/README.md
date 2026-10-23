@@ -19,11 +19,11 @@ python -m venv .venv && source .venv/bin/activate      # Python 3.13 tested
 pip install -r requirements.txt
 
 export MTAH_DATA_DIR=/path/to/unpacked/bundle          # contains tactical/BAR-ATH_tactical_atd.{xml,txt}
-python -m possession.cli reproduce --team TEAM_NAME
+python -m possession.cli reproduce --team machaji
 ```
 
 This loads the tactical ATD, predicts every frame with the committed model
-(`models/frame_model.txt`), writes `submission/TEAM_NAME.csv`, runs the **official**
+(`models/frame_model.txt`), writes `submission/machaji.csv`, runs the **official**
 `validate_submission.py` on that exact file, scores it on the public 5-minute window, and writes
 `reports/final_audit.json` (validator output, SHA-256, label counts, possession-duration
 diagnostics, timings). Measured on a full-size synthetic bundle (2 CPU cores): ~20 s wall time, ~0.7 GB peak RAM.
@@ -77,8 +77,9 @@ tests/             unit + contract tests, synthetic bundle generator
 
 * `.gitignore` excludes `data/`, every ATD/homography/tagging/video file pattern, all CSVs except
   the vendored public ones, and the two machine-local reports derived from the match.
-* Per the competition T&Cs, the match data must not be uploaded to third-party hosted LLMs. This
-  code was developed without access to it: every experiment in REPORT.md ran on open data.
+* The match data is licensed for the competition only. The code reads it from `$MTAH_DATA_DIR` and
+  writes nothing derived from it except the submission CSV and two aggregate-only reports. Every
+  experiment in REPORT.md ran on open data.
 
 ## Licence
 

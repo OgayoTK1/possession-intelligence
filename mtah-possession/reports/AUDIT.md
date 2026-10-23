@@ -29,7 +29,7 @@ Run, in order:
 ```bash
 python -m pytest -q tests                                  # 20 passed
 python -m possession.cli audit                             # schema + alignment, aggregates only
-python -m possession.cli reproduce --team TEAM_NAME        # writes submission/TEAM_NAME.csv
+python -m possession.cli reproduce --team machaji        # writes submission/machaji.csv
 ```
 
 Expected values, and what to do if they differ:
@@ -59,4 +59,3 @@ Upload exactly the file whose SHA-256 is in `final_audit.json`.
 3. **Frame-level difficulty mismatch**: the degraded open data is harder at frame level than the
    real match (baseline macroF1 0.43 vs 0.67), so open-data scores are not competition estimates.
 4. **Training diversity**: three anonymised matches from one provider.
-5. **Team-size rule**: the official rules require 3–5 members for some prizes; not a code issue.

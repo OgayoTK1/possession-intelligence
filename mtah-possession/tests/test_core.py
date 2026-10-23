@@ -32,7 +32,8 @@ OFFICIAL_SHA256 = {
 @pytest.mark.parametrize("name,digest", sorted(OFFICIAL_SHA256.items()))
 def test_official_files_unmodified(name, digest):
     with open(os.path.join(OFFICIAL_DIR, name), "rb") as f:
-        assert hashlib.sha256(f.read()).hexdigest() == digest
+        # compare content, not line endings: Git for Windows may check files out with CRLF
+        assert hashlib.sha256(f.read().replace(b"\r\n", b"\n")).hexdigest() == digest
 
 
 def test_graded_blocks_match_docs():

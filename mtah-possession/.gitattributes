@@ -1,0 +1,5 @@
+# Keep LF everywhere so checksums, the committed model and the submission bytes are identical on
+# Windows, macOS and Linux (Git for Windows otherwise converts to CRLF on checkout).
+* text=auto eol=lf
+*.txt text eol=lf
+*.csv text eol=lf
